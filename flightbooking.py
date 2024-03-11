@@ -36,6 +36,31 @@ def upload(file: UploadFile = File(...)):
         passenger_list_str = passenger_list_bin.decode("utf-8")
         passenger_list_df = pd.read_csv(StringIO(passenger_list_str))
         rows, cols = passenger_list_df.shape
+        # replace missing age with zero and convert to int
+        passenger_list_df.fillna({'Age': 0}, inplace=True)
+        passenger_list_df['Age'] = passenger_list_df['Age'].astype(int)
+        # replace missing SeatNumber with zero and convert to int
+        passenger_list_df.fillna({'SeatNumber': 0}, inplace=True)
+        passenger_list_df['SeatNumber'] = passenger_list_df['SeatNumber'].astype(int)
+        # assing missing seats
+        empty_seats = passenger_list_df['SeatNumber'] == 0
+        # empty_seats_index_list = passenger_list_df.loc[empty_seats, 'SeatNumber'].tolist()
+        passenger_list_df.loc[empty_seats, 'SeatNumber'] = passenger_list_df.loc[empty_seats].index + 1
+        # remove invalid rows (rows without addenger name)
+        passenger_list_df = passenger_list_df[passenger_list_df['Name'].notna()]
+        # update title according to gender
+        gender_male = passenger_list_df['Gender'] == 'Male'
+        gender_female = passenger_list_df['Gender'] == 'Female'
+        passenger_list_df.loc[gender_male, 'Title'] = 'Mr'
+        passenger_list_df.loc[gender_female, 'Title'] = 'Ms'
+        passenger_list_df
+        # update gender according to tile
+        title_mr = passenger_list_df['Title'] == 'Mr'
+        title_ms = passenger_list_df['Title'] == 'Ms'
+        gender_none = passenger_list_df['Gender'].isnull()
+        passenger_list_df.loc[title_mr & gender_none, 'Gender'] = 'Male'
+        passenger_list_df.loc[title_ms & gender_none, 'Gender'] = 'Female'
+        passenger_list_df.to_csv(file.filename)
     except Exception:
         return {"message": "There was an error uploading the file"}
     finally:
