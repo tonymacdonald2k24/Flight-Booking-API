@@ -29,8 +29,8 @@ async def get_flight_by_id(flight_id):
             break
     return flight
 
-@app.post("/passengers/bulk")
-def upload(file: UploadFile = File(...)):
+@app.post('/flights/{flight_id}/bulk')
+def upload(flight_id, file: UploadFile = File(...)):
     try:
         passenger_list_bin = file.file.read()
         passenger_list_str = passenger_list_bin.decode("utf-8")
@@ -60,7 +60,7 @@ def upload(file: UploadFile = File(...)):
         gender_none = passenger_list_df['Gender'].isnull()
         passenger_list_df.loc[title_mr & gender_none, 'Gender'] = 'Male'
         passenger_list_df.loc[title_ms & gender_none, 'Gender'] = 'Female'
-        passenger_list_df.to_csv(file.filename)
+        passenger_list_df.to_csv(f'flight_id_{flight_id}_{file.filename}')
     except Exception:
         return {"message": "There was an error uploading the file"}
     finally:
