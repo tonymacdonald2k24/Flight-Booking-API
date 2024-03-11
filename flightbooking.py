@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 
 app = FastAPI()
 
@@ -26,3 +26,15 @@ async def get_flight_by_id(flight_id):
             flight= f
             break
     return flight
+
+@app.post("/passengers/bulk")
+def upload(file: UploadFile = File(...)):
+    try:
+        contents = file.file.read()
+        passenger_list = contents.decode("utf-8")
+    except Exception:
+        return {"message": "There was an error uploading the file"}
+    finally:
+        file.file.close()
+    # return {"message": passenger_list}
+    return {"message": f"Successfully uploaded {file.filename}"}
