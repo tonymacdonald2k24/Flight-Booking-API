@@ -15,5 +15,5 @@ async def first_flight():
     return {'message': 'Welcome abord!'}
 
 @app.get('/flights')
-async def first_flight():
+async def get_all_flights():
     return FLIGHTS
