@@ -17,3 +17,12 @@ async def first_flight():
 @app.get('/flights')
 async def get_all_flights():
     return FLIGHTS
+
+@app.get('/flights/{flight_id}')
+async def get_flight_by_id(flight_id):
+    flight = f'Flight with the id {flight_id} not found'
+    for f in FLIGHTS:
+        if str(f['id']) == flight_id:
+            flight= f
+            break
+    return flight
