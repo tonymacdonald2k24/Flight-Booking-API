@@ -1,4 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
+from io import StringIO
+import pandas as pd
 
 app = FastAPI()
 
@@ -30,11 +32,13 @@ async def get_flight_by_id(flight_id):
 @app.post("/passengers/bulk")
 def upload(file: UploadFile = File(...)):
     try:
-        contents = file.file.read()
-        passenger_list = contents.decode("utf-8")
+        passenger_list_bin = file.file.read()
+        passenger_list_str = passenger_list_bin.decode("utf-8")
+        passenger_list_df = pd.read_csv(StringIO(passenger_list_str))
+        rows, cols = passenger_list_df.shape
     except Exception:
         return {"message": "There was an error uploading the file"}
     finally:
         file.file.close()
-    # return {"message": passenger_list}
-    return {"message": f"Successfully uploaded {file.filename}"}
+    # return {"message": passenger_list_str}
+    return {"message": f"Successfully uploaded {file.filename} with {rows} rows of passenger data."}
