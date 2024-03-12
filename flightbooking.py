@@ -63,12 +63,23 @@ async def add_flight(new_flight = Body()):
 
 @app.get('/flights/{flight_id}')
 async def get_flight_by_id(flight_id):
-    flight = f'Flight with the id {flight_id} not found'
-    for f in FLIGHTS:
-        if str(f['id']) == flight_id:
-            flight= f
-            break
-    return flight
+    try:
+        df = pd.read_csv('flights.csv')
+        print(df.dtypes)
+        print(type(flight_id))
+        flight = df[df['id'] == int(flight_id)]
+        flight_d = {
+            "id": int(flight.iloc[0]['id']),
+            "FlightNumber": int(flight.iloc[0]['FlightNumber']),
+            "Departure": str(flight.iloc[0]['Departure']),
+            "Arrival": str(flight.iloc[0]['Arrival']),
+            "Date": str(flight.iloc[0]['Date']),
+            "Time": str(flight.iloc[0]['Time']),
+            "GeneralCost": str(flight.iloc[0]['GeneralCost'])
+        }
+    except Exception:
+        return {"message": "There was an error reading the file"}
+    return flight_d
 
 @app.post('/flights/{flight_id}/bulk')
 def upload(flight_id, file: UploadFile = File(...)):
