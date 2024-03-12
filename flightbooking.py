@@ -71,8 +71,25 @@ def upload(flight_id, file: UploadFile = File(...)):
 @app.get('/flights/{flight_id}/passengers')
 async def get_passengers_by_flight_id(flight_id):
     try:
+        flight = None
+        for f in FLIGHTS:
+            if str(f['id']) == flight_id:
+                flight = f
+                break
+        general_cost = flight['general-cost']
         df = pd.read_csv(f'flight_id_{flight_id}_passengers.csv')
         passenger_count = df.shape[0]
+        general_passenger_count = df[df['PassengerType'] == 'General']['SeatNumber'].count()
+        discount_passenger_count = df[df['PassengerType'] == 'Discount']['SeatNumber'].count()
+        airline_passenger_count = df[df['PassengerType'] == 'Airline']['SeatNumber'].count()
     except Exception:
         return {"message": "There was an error reading the file"}
-    return  {"passenger-count": passenger_count}
+    return  {
+        'passenger-count': passenger_count,
+        'general-passenger-count': str(general_passenger_count),
+        'general-passenger-revenue': str(general_passenger_count * general_cost),
+        'discount-passenger-count': str(discount_passenger_count),
+        'discount-passenger-revenue': str(discount_passenger_count * general_cost * 0.85),
+        'airline-passenger-count': str(airline_passenger_count),
+        'airline-passenger-revenue': str(airline_passenger_count * general_cost * 0.1)
+    }
