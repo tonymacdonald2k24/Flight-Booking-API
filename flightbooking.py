@@ -14,11 +14,16 @@ FLIGHTS = [
 
 @app.get('/')
 async def first_flight():
-    return {'message': 'Welcome abord!'}
+    return {'message': 'Welcome aboard!'}
 
 @app.get('/flights')
 async def get_all_flights():
-    return FLIGHTS
+    try:
+        df = pd.read_csv('flights.csv')
+        flights = df.to_dict()
+    except Exception:
+        return {"message": "There was an error reading the file"}
+    return flights
 
 @app.post('/flights')
 async def add_flight(new_flight = Body()):
