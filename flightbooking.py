@@ -67,3 +67,12 @@ def upload(flight_id, file: UploadFile = File(...)):
         file.file.close()
     # return {"message": passenger_list_str}
     return {"message": f"Successfully uploaded {file.filename} with {rows} rows of passenger data."}
+
+@app.get('/flights/{flight_id}/passengers')
+async def get_passengers_by_flight_id(flight_id):
+    try:
+        df = pd.read_csv(f'flight_id_{flight_id}_passengers.csv')
+        passenger_count = df.shape[0]
+    except Exception:
+        return {"message": "There was an error reading the file"}
+    return  {"passenger-count": passenger_count}
