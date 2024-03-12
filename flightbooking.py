@@ -65,8 +65,6 @@ async def add_flight(new_flight = Body()):
 async def get_flight_by_id(flight_id):
     try:
         df = pd.read_csv('flights.csv')
-        print(df.dtypes)
-        print(type(flight_id))
         flight = df[df['id'] == int(flight_id)]
         flight_d = {
             "id": int(flight.iloc[0]['id']),
@@ -122,13 +120,12 @@ def upload(flight_id, file: UploadFile = File(...)):
 
 @app.get('/flights/{flight_id}/passengers')
 async def get_passengers_by_flight_id(flight_id):
+
     try:
-        flight = None
-        for f in FLIGHTS:
-            if str(f['id']) == flight_id:
-                flight = f
-                break
-        general_cost = flight['general-cost']
+        df = pd.read_csv('flights.csv')
+        flight = df[df['id'] == int(flight_id)]
+        general_cost = float(flight.iloc[0]['GeneralCost'])
+        # general_cost = flight['general-cost']
         df = pd.read_csv(f'flight_id_{flight_id}_passengers.csv')
         passenger_count = df.shape[0]
         general_passenger_count = df[df['PassengerType'] == 'General']['SeatNumber'].count()
