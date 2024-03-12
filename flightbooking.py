@@ -1,11 +1,11 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Body
 from io import StringIO
 import pandas as pd
 
 app = FastAPI()
 
 FLIGHTS = [
-    {'id': 1, 'flight-number': 111, 'departure': 'EDI', 'arrival': 'LAX', 'date': '31/05/2024', 'time': '20:00', 'general-cost': 399.99},
+    {"id": 1, "flight-number": 111, "departure": "EDI", "arrival": "LAX", "date": "31/05/2024", "time": "20:00", "general-cost": "399.99"},
     {'id': 2, 'flight-number': 222, 'departure': 'EDI', 'arrival': 'DXB', 'date': '11/10/2024', 'time': '17:30', 'general-cost': 199.99},
     {'id': 3, 'flight-number': 333, 'departure': 'DXB', 'arrival': 'LAX', 'date': '27/12/2024', 'time': '23:00', 'general-cost': 1999.99},
     {'id': 4, 'flight-number': 444, 'departure': 'EDI', 'arrival': 'MXP', 'date': '11/01/2025', 'time': '06:00', 'general-cost': 299.99},
@@ -19,6 +19,42 @@ async def first_flight():
 @app.get('/flights')
 async def get_all_flights():
     return FLIGHTS
+
+@app.post('/flights')
+async def add_flight(new_flight = Body()):
+    try:
+        flight_id = int(new_flight['id'])
+        flight_number = new_flight['flight-number']
+        departure = new_flight['departure']
+        arrival = new_flight['arrival']
+        date = new_flight['date']
+        time = new_flight['time']
+        general_cost = float(new_flight['general-cost'])
+        new_flight_cleaned = {
+            "id": flight_id,
+            "FlightNumber": flight_number,
+            "Departure": departure,
+            "Arrival": arrival,
+            "Date": date,
+            "Time": time,
+            "GeneralCost": general_cost
+        }
+    except Exception:
+        return {"message": "Error: invalid data."}
+    try:
+        df = pd.read_csv('flights.csv')
+        df2 = pd.DataFrame([new_flight_cleaned])
+        df3 = pd.concat([df, df2])
+        df3.to_csv('flights.csv',index=False)
+        return {"message": "Flight added"}
+    except Exception:
+        # first flight
+        df = pd.DataFrame([new_flight_cleaned])
+        try:
+            df.to_csv('flights.csv',index=False)
+        except Exception:
+            return {"message": "There was an error writing the file"}
+
 
 @app.get('/flights/{flight_id}')
 async def get_flight_by_id(flight_id):
